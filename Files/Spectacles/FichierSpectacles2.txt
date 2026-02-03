@@ -1,0 +1,8 @@
+nom_spectacle	Illusions Perdues	
+site_web	www.illusionsperdues.fr	
+date	2026-02-17	
+heure	20:30	
+type_place	prix	nb_place
+A	44	35
+B	32	50
+C	16	80

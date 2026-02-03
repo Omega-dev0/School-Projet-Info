@@ -1,0 +1,7 @@
+nom_spectacle	Hilda	
+site_web	www.hilda.fr	
+date	2026-05-02	
+heure	16:00	
+type_place	prix	nb_place
+A	44	35
+B	32	50

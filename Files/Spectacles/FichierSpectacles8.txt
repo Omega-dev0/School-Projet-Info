@@ -1,0 +1,7 @@
+nom_spectacle	Une situation delicate	
+site_web	www.une situationdelicate.fr	
+date	2026-05-03		
+heure	20:30	
+type_place	prix	nb_place
+A	22	75
+B	30	50

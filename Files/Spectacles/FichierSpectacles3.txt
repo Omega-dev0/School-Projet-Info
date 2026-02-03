@@ -1,0 +1,9 @@
+nom_spectacle	Le Visiteur	
+site_web	www.levisiteur.fr	
+date	2026-03-15	
+heure	20:30	
+type_place	prix	nb_place
+A	44	35
+B	32	50
+C	16	80
+D   5   20

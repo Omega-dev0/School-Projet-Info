@@ -1,0 +1,10 @@
+email	mario.lanza@agro.fr
+prenom	Mario
+nom	Lanza
+nom_spectacle	Contes et Legendes
+date	2026-06-02
+heure	20:30
+type _place	C
+prix	35
+nb_places	4
+date_reservation	2026-01-15

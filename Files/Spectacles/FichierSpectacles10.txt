@@ -1,0 +1,8 @@
+nom_spectacle	Contes et Legendes	
+site_web	www.conteslegenes.fr	
+date	2026-06-02	
+heure	20:30	
+type_place	prix	nb_place
+A	22	175
+B	30	150
+C	35	135

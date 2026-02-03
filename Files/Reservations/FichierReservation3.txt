@@ -1,0 +1,10 @@
+email	mario.lanza@agro.fr
+prenom	Mario
+nom	Lanza
+nom_spectacle	Casse-Noisette
+date	2026-12-20
+heure	20:30
+type_place	B
+prix	95
+nb_places	2
+date_reservation	2026-01-19

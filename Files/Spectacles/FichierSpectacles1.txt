@@ -1,0 +1,8 @@
+nom_spectacle	Casse-Noisette	
+site_web	www.cassenoisette.fr	
+date	2026-12-20
+heure	20:30	
+type_place	prix	nb_place
+A	120	60
+B	95	90
+C	80	150

@@ -1,0 +1,8 @@
+nom_spectacle	Julien Clerc: les jours heureux	
+site_web	www.jclerc.fr	
+date	2026-06-21
+heure	20:00	
+type_place	prix	nb_place
+A	100	100
+B	80	150
+C	40	50

@@ -1,0 +1,8 @@
+nom_spectacle	La vie Parisienne 66	
+site_web	www.lavieparisienne66.fr	
+date	2026-03-02		
+heure	20:30	
+type_place	prix	nb_place
+A	22	75
+B	30	50
+C	35	35

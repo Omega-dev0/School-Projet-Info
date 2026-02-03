@@ -1,0 +1,9 @@
+nom_spectacle	L'importance d'etre constants	
+site_web	www.limportance.fr	
+date	2026-06-6		
+heure	20:30	
+type_place	prix	nb_place
+A	22	75
+B	30	50
+C	35	35
+D   5   30
