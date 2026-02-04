@@ -17,6 +17,16 @@ import Global
 
 
 def majusculeCaractere(caractere: str, majEnfoncee: bool, altEnfoncee: bool) -> str:
+    """
+     Transforme un caractère selon l'état des touches Majuscule et Alt.
+    Cette fonction prend un caractère et retourne sa version modifiée en fonction de l'appui sur les touches Majuscule (majEnfoncee) et Alt (altEnfoncee), en tenant compte des caractères spéciaux du clavier AZERTY français.
+    Paramètres :
+        caractere (str) : Le caractère à transformer.
+        majEnfoncee (bool) : Indique si la touche Majuscule est enfoncée.
+        altEnfoncee (bool) : Indique si la touche Alt est enfoncée.
+    Retourne :
+         str : Le caractère transformé selon les touches enfoncées.
+    """
     caracteresSpeciaux = [
         ("&", "1"),
         ("é", "2", "~"),
@@ -44,7 +54,7 @@ def majusculeCaractere(caractere: str, majEnfoncee: bool, altEnfoncee: bool) -> 
         if caractere == speciaux[0]:
             if majEnfoncee:
                 return speciaux[1] if len(speciaux) > 1 else speciaux[0]
-            elif len(speciaux) >= 2 and altEnfoncee:
+            elif len(speciaux) >= 3 and altEnfoncee:
                 return speciaux[2]
             else:
                 return speciaux[0]
@@ -55,19 +65,52 @@ def majusculeCaractere(caractere: str, majEnfoncee: bool, altEnfoncee: bool) -> 
 
 
 def enleverFormattage(content: str) -> str:
+    """
+    Supprime le formatage du texte si il y en a pour uniformiser les inputs
+
+    Args:
+        content (str): Le texte formaté à traiter.
+
+    Returns:
+        str: Le texte sans formatage (texte brut).
+    """
     return Text.from_markup(content).plain
 
 
 def elementTexteVersString(elementTexte: Union[str, Text]) -> str:
+    """
+    Convertit un élément de texte en chaîne de caractères pour uniformiser les affichages.
+
+    Cette fonction prend en entrée soit une chaîne de caractères (`str`), soit un objet `Text`.
+    Si l'entrée est un objet `Text`, elle retourne son attribut `plain`. Sinon, elle retourne la chaîne telle quelle.
+
+    Paramètres:
+        elementTexte (Union[str, Text]): L'élément de texte à convertir.
+
+    Retourne:
+        str: La représentation sous forme de chaîne de caractères de l'élément de texte.
+    """
     return elementTexte.plain if isinstance(elementTexte, Text) else elementTexte
 
 
 def mettreAJourPanelGauche(contenuNouveau):
+    """
+    Met à jour le panneau gauche de l'interface avec un nouveau contenu.
+
+    Paramètres:
+        contenuNouveau (str): Le nouveau contenu à afficher dans le panneau gauche.
+    """
     INTERFACE["gauche"].update(Panel(contenuNouveau, border_style="bold green"))
     LIVE.refresh()
 
 
 def mettreAJourPanelDroit(contenuNouveau):
+    """
+    Met à jour le panneau droit de l'interface avec un nouveau contenu.
+
+    Paramètres:
+        contenuNouveau (str): Le nouveau contenu à afficher dans le panneau droit.
+    """
     INTERFACE["droite"].update(Panel(contenuNouveau, border_style="bold red"))
     LIVE.refresh()
 
@@ -78,13 +121,39 @@ def afficherMenu(
     afficherLesDescriptions=True,
     separateurs={},
     sortieAvecEchap=True,
-    itemsParPage=10,
     boucle=True,
     ecranAffichage="gauche",
     afficherAideNavigation=False,
 ):
+    """
+    Affiche un menu interactif dans la console permettant à l'utilisateur de sélectionner une option à l'aide du clavier.
+
+    Paramètres:
+        options : list[dict]
+            Liste des options à afficher dans le menu. Chaque option doit être un dictionnaire contenant au minimum la clé "nom" et éventuellement "description".
+        titre : str, optionnel
+            Titre affiché en haut du menu (par défaut "Menu").
+        afficherLesDescriptions : bool, optionnel
+            Si True, affiche la description de l'option sélectionnée (par défaut True).
+        separateurs : dict, optionnel
+            Dictionnaire associant des indices d'options à des séparateurs à afficher avant l'option correspondante.
+        sortieAvecEchap : bool, optionnel
+            Si True, permet de quitter le menu avec la touche Échap (par défaut True).
+        boucle : bool, optionnel
+            Si True, la navigation dans le menu boucle de la dernière à la première option et inversement (par défaut True).
+        ecranAffichage : str, optionnel
+            Détermine où afficher le menu ("gauche" ou "droite", par défaut "gauche").
+        afficherAideNavigation : bool, optionnel
+            Si True, affiche un texte d'aide à la navigation (par défaut False).
+
+    Retourne:
+        dict ou None
+            Le dictionnaire de l'option sélectionnée, ou None si l'utilisateur quitte le menu avec Échap.
+    """
     indexCurseur, optionSelectionnee, selectionFaite = 0, None, False
-    tite = enleverFormattage(titre)
+
+    hauteurConsole = CONSOLE.size.height
+    itemsParPage = hauteurConsole - 8  # Réserver de l'espace pour le titre et les bordures
 
     def miseAJourInterface():
         elementTitre, elementOptions, page = (
@@ -113,6 +182,7 @@ def afficherMenu(
                     mettreAJourPanelDroit(
                         Group(
                             Markdown(f"# {enleverFormattage(option['nom'])}"),
+                            "",
                             option["description"],
                             (Global.TEXTES["aideNavigationMenu"] if afficherAideNavigation else ""),
                         )
@@ -124,9 +194,9 @@ def afficherMenu(
             elementOptions.append(f"[dim]...[/dim]")
 
         if ecranAffichage == "gauche":
-            mettreAJourPanelGauche(Group(elementTitre, *elementOptions))
+            mettreAJourPanelGauche(Group(elementTitre, "", *elementOptions))
         else:
-            mettreAJourPanelDroit(Group(elementTitre, *elementOptions))
+            mettreAJourPanelDroit(Group(elementTitre, "", *elementOptions))
 
     def toucheDeclenchee(touche):
         nonlocal indexCurseur, selectionFaite, optionSelectionnee
@@ -161,6 +231,20 @@ def attendreAppuiEntree(
     titre="Continuer",
     message="Appuyez sur [bold]entrée[/bold] pour continuer...",
 ):
+    """
+    Affiche un message et attend l'appui sur une touche pour continuer.
+
+    Cette fonction affiche un contenu avec un titre et un message sur l'écran spécifié,
+    puis reste en attente jusqu'à ce que l'utilisateur appuie sur la touche Entrée ou Échap.
+
+    Paramètres:
+        ecranAffichage (str, optional): Position d'affichage du contenu ("gauche" ou "droite", par défaut "droite").
+        titre (str, optional): Titre à afficher en haut du message (par défaut "Continuer").
+        message (str, optional): Message à afficher au-dessous du titre (par défaut "Appuyez sur [bold]entrée[/bold] pour continuer...").
+
+    Retourne:
+        bool: False si l'utilisateur appuie sur Entrée, True si l'utilisateur appuie sur Échap.
+    """
     annulee = None
 
     def toucheDeclenchee(touche):
@@ -173,7 +257,7 @@ def attendreAppuiEntree(
     connexionClavier = keyboard.Listener(on_press=toucheDeclenchee, suppress=Global.BLOQUER_INPUTS)
     connexionClavier.start()
 
-    contenu = Group(Markdown(f"# {elementTexteVersString(titre)}"), message)
+    contenu = Group(Markdown(f"# {elementTexteVersString(titre)}"), "", message)
     (
         mettreAJourPanelGauche(contenu)
         if ecranAffichage == "gauche"
@@ -195,6 +279,25 @@ def inputTexte(
     sortieAvecEchap=True,
     functionDeValidation=None,
 ):
+    """
+    Affiche une interface interactive pour l'entrée de texte utilisateur avec support clavier.
+
+    Permet à l'utilisateur de saisir un ou plusieurs champs de texte via le clavier,
+    avec navigation entre les champs, curseur positionnable, et validation personnalisée.
+
+    Paramètres:
+        ecranAffichage (str, optional): Position d'affichage du panneau ("gauche" ou "droite") (par défaut "gauche").
+        titre (str, optional): Titre de la boîte de dialogue. (par défaut "Entrée de texte").
+        message (str, optional): Message affiché avec placeholders "__INPUT__" pour chaque champ. (par défaut "Veuillez entrer du texte : __INPUT__").
+        valeurParDefaut (list, optional): Liste des valeurs par défaut pour chaque champ. (par défaut []).
+        sortieAvecEchap (bool, optional): Permet l'annulation avec la touche Échap. (par défaut True).
+        functionDeValidation (callable, optional): Fonction de validation appelée avec les réponses.
+            Doit retourner True si valide, sinon un message d'erreur.
+            Défaut à None.
+
+    Retourne:
+        list: Liste des réponses saisies, ou liste de None si annulée avec Échap.
+    """
     nombreChamps, reponses, termine = message.count("__INPUT__"), [], False
     annulee = False
     for i in range(nombreChamps):
@@ -227,6 +330,7 @@ def inputTexte(
 
         contenu = Group(
             Markdown(f"# {elementTexteVersString(titre)}"),
+            "",
             messageModifie,
             f"[red]{erreurPrecedente}[/red]" if erreurPrecedente else "",
         )
@@ -296,6 +400,8 @@ def inputTexte(
                 indexReponseSelectionnee = NouveauIndexReponseSelectionnee
                 positionDuCurseur = len(reponses[indexReponseSelectionnee])
                 miseAJourInterface()
+        elif touche == keyboard.Key.num_lock:
+            pass  # Ignorer cette touche pour éviter des problèmes sur certains claviers
         else:
             try:
                 caractere = majusculeCaractere(touche.char, majEnfoncee, altEnfoncee)
@@ -352,6 +458,22 @@ def inputFichier(
     sortieAvecEchap=True,
     formatsAcceptes=["*"],
 ):
+    """
+    Affiche une interface interactive pour la sélection de fichiers via le clavier.
+
+    Permet à l'utilisateur de naviguer dans le système de fichiers et de sélectionner un fichier,
+    avec support clavier.
+
+    Paramètres:
+        ecranAffichage (str, optional): Position d'affichage du panneau ("gauche" ou "droite") (par défaut "gauche").
+        titre (str, optional): Titre de la boîte de dialogue. (par défaut "Sélection de fichier").
+        cheminDeBase (str, optional): Chemin de départ pour la navigation. (par défaut "./Data/").
+        sortieAvecEchap (bool, optional): Permet l'annulation avec la touche Échap. (par défaut True).
+        formatsAcceptes (list, optional): Liste des extensions de fichiers acceptées (par défaut ["*"] pour tous les formats).
+
+    Retourne:
+        str ou None: Chemin complet du fichier sélectionné, ou None si annulé avec Échap.
+    """
     cheminActuel = pathlib.Path(cheminDeBase).resolve()
 
     while True:
@@ -373,7 +495,6 @@ def inputFichier(
             titre=f"{elementTexteVersString(titre)} - {str(cheminActuel)}",
             afficherLesDescriptions=False,
             sortieAvecEchap=sortieAvecEchap,
-            itemsParPage=10,
             boucle=False,
             ecranAffichage=ecranAffichage,
         )
@@ -392,38 +513,16 @@ def inputFichier(
             return str(cheminActuel / nomOption)
 
 
-def afficherDonnee(ecranAffichage="gauche", titre="", entete=[], donnee=[], attendreAppui=True):
-    table = Table(show_header=len(entete) > 0, header_style="bold magenta")
-    for col in entete:
-        table.add_column(col)
-
-    for ligne in donnee:
-        table.add_row(*[str(cell) for cell in ligne])
-
-    attenteTerminee = False
-
-    def appuiTouche(touche):
-        nonlocal attenteTerminee
-        if touche == keyboard.Key.enter:
-            attenteTerminee = True
-
-    if attendreAppui:
-        connexionClavier = keyboard.Listener(on_press=appuiTouche, suppress=Global.BLOQUER_INPUTS)
-        connexionClavier.start()
-
-    (
-        mettreAJourPanelGauche(Group(Markdown(f"# {elementTexteVersString(titre)}"), table))
-        if ecranAffichage == "gauche"
-        else mettreAJourPanelDroit(Group(Markdown(f"# {elementTexteVersString(titre)}"), table))
-    )
-
-    if attendreAppui:
-        while not attenteTerminee:
-            time.sleep(0.1)
-        connexionClavier.stop()
-
-
 def formatDateSQLToFR(dateSQL: str) -> str:
+    """
+    Convertit une date au format SQL (AAAA-MM-JJ) en format français (JJ/MM/AAAA).
+
+    Paramètres:
+        dateSQL (str): La date au format SQL (AAAA-MM-JJ).
+
+    Retourne:
+        str: La date au format français (JJ/MM/AAAA).
+    """
     dateParties = dateSQL.split("-")
     if len(dateParties) != 3:
         return dateSQL

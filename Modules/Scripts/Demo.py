@@ -132,6 +132,7 @@ def main():
     UI.mettreAJourPanelDroit(
         Group(
             Markdown("# Informations"),
+            "",
             Text("Voici un exemple d'affichage de données en tableau :"),
         )
     )

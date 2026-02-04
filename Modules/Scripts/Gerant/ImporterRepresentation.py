@@ -74,12 +74,12 @@ def main():
             idSpectacle = CURSEUR.fetchone()
 
             if idSpectacle is None:
-                annulation = UI.attendreAppuiEntree(
+                annule = UI.attendreAppuiEntree(
                     ecranAffichage="gauche",
                     titre="Spectacle Inconnu",
                     message=f"[yellow]Le spectacle '{nomSpectacle}' n'existe pas dans la base de données. Il sera donc crée.[/yellow]\n\nAppuyez sur Entrée pour continuer ou Échap pour annuler.",
                 )
-                if annulation:
+                if annule:
                     annulation()
                     CURSEUR.close()
                     return
@@ -119,16 +119,20 @@ def main():
                 )
 
         Global.CONNEXION.commit()
+        infosRepresentation = f"Spectacle: [bold]{nomSpectacle}[/bold]\nDate: [bold]{date}[/bold]\nHeure: [bold]{heure}[/bold]\nPlaces:\n"
+        for typePlace, prix, nbPlaces in places:
+            infosRepresentation += f"- Catégorie: [bold]{typePlace}[/bold], Prix: [bold]{prix}€[/bold], Nombre de places: [bold]{nbPlaces}[/bold]\n"
+            
         UI.attendreAppuiEntree(
             ecranAffichage="gauche",
             titre="Importation Réussie",
-            message="[green]La représentation a été importée avec succès.[/green]\n\nAppuyez sur Entrée pour continuer.",
+            message=f"[green]La représentation a été importée avec succès.[/green]\n\n{infosRepresentation}\n\nAppuyez sur Entrée pour continuer.",
         )
     except Exception as e:
         UI.attendreAppuiEntree(
             ecranAffichage="gauche",
             titre="Erreur d'Importation",
-            message=f"[red]Une erreur est survenue lors de l'importation :[/red]\n {str(e)}\n\nAppuyez sur Entrée pour continuer.",
+            message=f"[red]Une erreur est survenue lors de l'importation :[/red]\n{str(e)}\n\nAppuyez sur Entrée pour continuer.",
         )
     finally:
         CURSEUR.close()

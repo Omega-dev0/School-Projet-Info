@@ -26,6 +26,7 @@ def main():
         UI.mettreAJourPanelDroit(
             Group(
                 Markdown("# Ventes"),
+                "",
                 contenu,
             )
         )
@@ -43,6 +44,7 @@ def main():
         contenu += "\n"
         group = Group(
             Markdown("# Ventes"),
+            "",
             table,
         )
         UI.mettreAJourPanelDroit(group)
@@ -78,7 +80,7 @@ def main():
                 if len(tempsRestant) > 0:
                     tempsRestant += "et "
                 tempsRestant += f"{minutes} minute{'s' if minutes > 1 else ''} "
-            contenu += f"\n- [bold]{representation[3]}[/bold] le [green]{UI.formatDateSQLToFR(representation[1])}[/green] à [green]{representation[2]}[/green] | Dans: {tempsRestant}"
+            contenu += f"\n\n- [bold]{representation[3]}[/bold] le [green]{UI.formatDateSQLToFR(representation[1])}[/green] à [green]{representation[2]}[/green] | Dans: {tempsRestant}"
 
     UI.attendreAppuiEntree(
         titre="Tableau de bord",

@@ -4,6 +4,10 @@ import Modules.Interface as UI
 import re
 import datetime
 
+from rich.console import Group
+from rich.markdown import Markdown
+from rich.text import Text
+
 
 def annulation():
     UI.attendreAppuiEntree(
@@ -43,7 +47,7 @@ def main():
         )
 
     representationSelectionnee = UI.afficherMenu(
-        titre="Sélectionnez la représentation à supprimer",
+        titre="Sélectionnez la représentation à modifier",
         options=options,
         afficherLesDescriptions=False,
         sortieAvecEchap=True,
@@ -54,6 +58,26 @@ def main():
         annulation()
         CURSEUR.close()
         return
+
+    requeteInfosAdditionnelles = """SELECT type_place, prix, nb_places 
+    FROM place 
+    WHERE id_representation = ?"""
+    infosCategories = CURSEUR.execute(
+        requeteInfosAdditionnelles, (representationSelectionnee["idRepresentation"],)
+    ).fetchall()
+
+    UI.mettreAJourPanelDroit(
+        UI.Group(
+            Markdown(f"# Informations sur la représentation"),
+            f"""\n\n[bold]Spectacle:[/bold] {spectacleCourant}
+[bold]Date:[/bold] {UI.formatDateSQLToFR(representationSelectionnee["date"])}
+[bold]Heure:[/bold] {representationSelectionnee["heure"]}
+
+[bold]Catégories de places:[/bold]
+{''.join([f'- Catégorie: [bold]{info[0]}[/bold], Prix: [bold]{info[1]}€[/bold], Nombre de places: [bold]{info[2]}[/bold]\n' for info in infosCategories])}
+""",
+        )
+    )
 
     while True:
         action = UI.afficherMenu(
@@ -122,6 +146,18 @@ def main():
             representationSelectionnee["date"] = dateSQL
             representationSelectionnee["heure"] = heure
             Global.CONNEXION.commit()
+            UI.mettreAJourPanelDroit(
+                UI.Group(
+                    Markdown(f"# Informations sur la représentation"),
+                    f"""\n\n[bold]Spectacle:[/bold] {spectacleCourant}
+[bold]Date:[/bold] {UI.formatDateSQLToFR(representationSelectionnee["date"])}
+[bold]Heure:[/bold] {representationSelectionnee["heure"]}
+
+[bold]Catégories de places:[/bold]
+{''.join([f'- Catégorie: [bold]{info[0]}[/bold], Prix: [bold]{info[1]}€[/bold], Nombre de places: [bold]{info[2]}[/bold]\n' for info in infosCategories])}
+""",
+                )
+            )
             UI.attendreAppuiEntree(
                 titre="Modification réussie",
                 message="[green]Les informations de la représentation ont été modifiées avec succès.[/green]\n\nAppuyez sur Entrée pour continuer.",
@@ -130,10 +166,15 @@ def main():
 
         elif action["action"] == "modifier_categories":
             placesRepresentation = CURSEUR.execute(
-                "SELECT place.id, place.type_place, place.prix, place.nb_places, SUM(reservation.nb_places) FROM place,reservation WHERE id_representation = ? AND place.id=reservation.id_place",
+                """SELECT place.id, place.type_place, place.prix, place.nb_places, COUNT(reservation.id)
+                FROM place
+                LEFT JOIN reservation ON place.id = reservation.id_place
+                WHERE place.id_representation = ?
+                GROUP BY place.id;""",
                 (representationSelectionnee["idRepresentation"],),
             ).fetchall()
-            if len(placesRepresentation) == 0:
+            print(placesRepresentation)
+            if len(placesRepresentation) == 0 or placesRepresentation[0][0] is None:
                 UI.attendreAppuiEntree(
                     titre="Aucune catégorie de place",
                     message="[red]Il n'y a pas de catégories de places à modifier pour cette représentation.[/red]\n\nAppuyez sur Entrée pour continuer.",
@@ -145,7 +186,7 @@ def main():
 
             valeursParDefaut = []
             for place in placesRepresentation:
-                message += f"\n\n[bold]Catégorie: __INPUT__[/bold]:\n  - Prix (€): __INPUT__\n  - Nombre de places disponibles: __INPUT__ [dim] {place[4] + place[3]} Places dans la catégorie au total[/dim]"
+                message += f"\n[bold]Catégorie: __INPUT__[/bold]:\n  - Prix: __INPUT__ €\n  - Nombre de places disponibles: __INPUT__ [dim] {place[4] + place[3]} Places dans la catégorie au total[/dim]"
                 valeursParDefaut.append(place[1])  # type_place
                 valeursParDefaut.append(str(place[2]))  # prix
                 valeursParDefaut.append(str(place[3]))  # nb_places
@@ -190,11 +231,24 @@ def main():
                 prix = float(nouvellesValeurs[i + 1])
                 nb_places = int(nouvellesValeurs[i + 2])
                 place_id = placesRepresentation[i // 3][0]
+                infosCategories[i // 3] = (type_place, prix, nb_places)
                 CURSEUR.execute(
                     "UPDATE place SET type_place = ?, prix = ?, nb_places = ? WHERE id = ?",
                     (type_place, prix, nb_places, place_id),
                 )
-                CURSEUR.connection.commit()
+            UI.mettreAJourPanelDroit(
+                UI.Group(
+                    Markdown(f"# Informations sur la représentation"),
+                    f"""\n\n[bold]Spectacle:[/bold] {spectacleCourant}
+[bold]Date:[/bold] {UI.formatDateSQLToFR(representationSelectionnee["date"])}
+[bold]Heure:[/bold] {representationSelectionnee["heure"]}
+
+[bold]Catégories de places:[/bold]
+{''.join([f'- Catégorie: [bold]{info[0]}[/bold], Prix: [bold]{info[1]}€[/bold], Nombre de places: [bold]{info[2]}[/bold]\n' for info in infosCategories])}
+""",
+                )
+            )
+            CURSEUR.connection.commit()
 
         elif action["action"] == "ajouter_categories":
             message = f"""Ajout de nouvelles catégories de places pour la représentation:
@@ -234,6 +288,7 @@ def main():
             requetePlaces = """
             INSERT INTO place (id_representation, type_place, prix, nb_places) VALUES (?, ?, ?, ?)
             """
+            infosCategories.append((cat, float(prixUnitaire), int(nbPlaces)))
             CURSEUR.execute(
                 requetePlaces,
                 (
@@ -244,6 +299,18 @@ def main():
                 ),
             )
             Global.CONNEXION.commit()
+            UI.mettreAJourPanelDroit(
+                UI.Group(
+                    Markdown(f"# Informations sur la représentation"),
+                    f"""\n\n[bold]Spectacle:[/bold] {spectacleCourant}
+[bold]Date:[/bold] {UI.formatDateSQLToFR(representationSelectionnee["date"])}
+[bold]Heure:[/bold] {representationSelectionnee["heure"]}
+
+[bold]Catégories de places:[/bold]
+{''.join([f'- Catégorie: [bold]{info[0]}[/bold], Prix: [bold]{info[1]}€[/bold], Nombre de places: [bold]{info[2]}[/bold]\n' for info in infosCategories])}
+""",
+                )
+            )
             UI.attendreAppuiEntree(
                 titre="Ajout réussi",
                 message="[green]La nouvelle catégorie de places a été ajoutée avec succès.[/green]\n\nAppuyez sur Entrée pour continuer.",
@@ -251,11 +318,16 @@ def main():
             )
 
         elif action["action"] == "supprimer_categories":
+            # On utilise une jointure qui n'est pas sur place car on ne sait pas si des réservations existent
             placesRepresentation = CURSEUR.execute(
-                "SELECT reservation.id, reservation.type_place, reservation.prix, reservation.nb_places, COUNT(reservation.id) FROM place,reservation WHERE id_representation = ? AND place.id=reservation.id_place",
+                """SELECT place.id, place.type_place, place.prix, place.nb_places, COUNT(reservation.id)
+                FROM place
+                LEFT JOIN reservation ON place.id = reservation.id_place
+                WHERE place.id_representation = ?
+                GROUP BY place.id;""",
                 (representationSelectionnee["idRepresentation"],),
             ).fetchall()
-            if len(placesRepresentation) == 0:
+            if len(placesRepresentation) == 0 or placesRepresentation[0][0] is None:
                 UI.attendreAppuiEntree(
                     titre="Aucune catégorie de place",
                     message="[red]Il n'y a pas de catégories de places à supprimer pour cette représentation.[/red]\n\nAppuyez sur Entrée pour continuer.",
@@ -301,5 +373,25 @@ def main():
 
             # Suppression de la catégorie de place
             CURSEUR.execute("DELETE FROM place WHERE id = ?", (placeASupprimer["id_place"],))
+
+            Global.CONNEXION.commit()
+            infosCategories = [
+                info
+                for info in infosCategories
+                if info[0] != placeASupprimer["nom"].split(",")[0].replace("Catégorie: ", "")
+            ]
+            UI.mettreAJourPanelDroit(
+                UI.Group(
+                    Markdown(f"# Informations sur la représentation"),
+                    ""
+                    f"""\n\n[bold]Spectacle:[/bold] {spectacleCourant}
+[bold]Date:[/bold] {UI.formatDateSQLToFR(representationSelectionnee["date"])}
+[bold]Heure:[/bold] {representationSelectionnee["heure"]}
+
+[bold]Catégories de places:[/bold]
+{''.join([f'- Catégorie: [bold]{info[0]}[/bold], Prix: [bold]{info[1]}€[/bold], Nombre de places: [bold]{info[2]}[/bold]\n' for info in infosCategories])}
+""",
+                )
+            )
 
     CURSEUR.close()

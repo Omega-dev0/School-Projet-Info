@@ -20,15 +20,22 @@ def main():
 
     CURSEUR = Global.CONNEXION.cursor()
 
-    requete = "SELECT id, libelle, site_web FROM spectacle"
+    requete = """SELECT spectacle.id, spectacle.libelle, spectacle.site_web, COUNT(representation.id)
+    FROM spectacle,representation 
+    WHERE spectacle.id = representation.id_spectacle
+    AND representation.date >= DATE('now')
+    AND representation.heure >= TIME('now')
+    GROUP BY spectacle.id, spectacle.libelle, spectacle.site_web
+    ORDER BY spectacle.libelle"""
     CURSEUR.execute(requete)
     spectacles = CURSEUR.fetchall()
 
     options = []
     for spectacle in spectacles:
+        nom = f"{spectacle[1]} ([dim]{spectacle[3]} représentation disponibles[/dim])"
         options.append(
             {
-                "nom": spectacle[1],
+                "nom": nom,
                 "id": spectacle[0],
             }
         )
@@ -36,6 +43,7 @@ def main():
     UI.mettreAJourPanelDroit(
         Group(
             Markdown(f"# Achat de places"),
+            "",
             Text(
                 "Sélectionnez un spectacle dans le menu de gauche pour commencer le processus d'achat de places."
             ),
@@ -59,6 +67,8 @@ def main():
     representation.id, representation.date, representation.heure, place.type_place, place.prix, place.nb_places, place.id
     FROM representation, place 
     WHERE id_spectacle = ? 
+    AND representation.date >= DATE('now')
+    AND representation.heure >= TIME('now')
     AND place.id_representation = representation.id 
     ORDER BY representation.date, representation.heure, place.type_place"""
 
@@ -150,6 +160,7 @@ def main():
     UI.mettreAJourPanelDroit(
         Group(
             Markdown("# Confirmation d'achat"),
+            "",
             "Appuyer sur Entrée pour [green]confirmer[/green] l'achat des places.\nAppuyer sur Échap pour [red]annuler[/red] l'achat.",
         )
     )

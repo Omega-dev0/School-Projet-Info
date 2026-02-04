@@ -69,7 +69,7 @@ def main():
                                     "idRepresentation": idRepresentation,
                                 }
                             )
-                        idRepresentation = place[0]
+                    idRepresentation = place[0]
                     date = place[1]
                     heure = place[2]
                     desc = ""

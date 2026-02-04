@@ -90,6 +90,7 @@ def main():
     UI.mettreAJourPanelDroit(
         Group(
             Markdown("# Création d'une représentation"),
+            "",
             f"Représentation pour le spectacle [bold]{spectacle['nom']}[/bold] le [bold]{UI.formatDateSQLToFR(date)}[/bold] à [bold]{heure}[/bold].",
         )
     )
@@ -132,6 +133,7 @@ def main():
         UI.mettreAJourPanelDroit(
             Group(
                 Markdown("# Création d'une représentation"),
+                "",
                 f"Représentation pour le spectacle [bold]{spectacle['nom']}[/bold] le [bold]{UI.formatDateSQLToFR(date)}[/bold] à [bold]{heure}[/bold].",
                 categories,
             )

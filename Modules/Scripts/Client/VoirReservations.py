@@ -21,6 +21,8 @@ def main():
     representationEnCours = None
     description = ""
     nom = ""
+    date = ""
+    heure = ""
     categories = []
     for reservation in reservations:
         if representationEnCours != reservation[8]:
@@ -32,12 +34,16 @@ def main():
                         "description": description,
                         "idRepresentation": representationEnCours,
                         "categories": categories,
+                        "heure": heure,
+                        "date": date,
                     }
                 )
 
             representationEnCours = reservation[8]
             categories = []
             nom = f"{reservation[6]} - {UI.formatDateSQLToFR(reservation[4])} {reservation[5]}"
+            date = reservation[4]
+            heure = reservation[5]
             description = f"""Réservation pour le spectacle [bold]{reservation[6]}[/bold] le [bold]{UI.formatDateSQLToFR(reservation[4])}[/bold] à [bold]{reservation[5]}[/bold].\n\n"""
 
         if reservation[1] > 0:
@@ -57,6 +63,8 @@ def main():
                 "description": description,
                 "idRepresentation": representationEnCours,
                 "categories": categories,
+                "heure": heure,
+                "date": date,
             }
         )
 
@@ -67,4 +75,38 @@ def main():
         options=options,
         afficherAideNavigation=False,
     )
+
+    texte = ""
+    if reservationChoisie is not None:
+        texte += "[bold]RÉSERVATION[/bold]\n\n"
+        texte += f"NOM: {Global.client['nom']} {Global.client['prenom']}\n"
+        texte += f"SPECTACLE: {reservationChoisie['nom']}\n\n"
+        texte += f"DATE ET HEURE: {UI.formatDateSQLToFR(reservationChoisie['date'])} à {reservationChoisie['heure']}\n\n"
+        texte += "\n"
+        if reservationChoisie["categories"]:
+            for categorie in reservationChoisie["categories"]:
+                texte += f"x {categorie['nb_places']} - Place cat {categorie['type_place']}\n"
+        QRCode = [
+            "┌────────────────────────┐",
+            "│████████      ████████  │",
+            "│██      ██    ██      ██│",
+            "│██████████    ██████████│",
+            "│      ████      ████    │",
+            "│████    ████      ████  │",
+            "│██████████████    ████  │",
+            "│██    ██      ████████  │",
+            "│████    ██████      ██  │",
+            "│████████    ██████████  │",
+            "│██      ████    ██      │",
+            "│██████████      ██████  │",
+            "│██    ██████    ██████  │",
+            "└────────────────────────┘",
+        ]
+        texte += "\n".join(QRCode)
+        message = UI.attendreAppuiEntree(
+            titre="Détails de la réservation",
+            message=texte,
+            ecranAffichage="gauche",
+        )
+
     return

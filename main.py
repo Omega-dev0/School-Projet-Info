@@ -21,6 +21,7 @@ from Modules.Scripts.Gerant.SupprimerRepresentation import main as supprimerRepr
 from Modules.Scripts.Gerant.ModifierRepresentation import main as modifierRepresentation
 from Modules.Scripts.Gerant.TableauDeBord import main as tableauDeBord
 from Modules.Scripts.Gerant.ImporterRepresentation import main as importerRepresentation
+from Modules.Scripts.Gerant.ImporterReservation import main as importerReservation
 
 import re
 
@@ -56,6 +57,7 @@ def main():
     UI.mettreAJourPanelDroit(
         Group(
             Markdown("# Disclaimer"),
+            "",
             Text(
                 "Ceci est une méthode peu pratique (et encore moins sécurisée mais ce n'est pas le sujet de ce projet) pour simuler une connexion client. Sélectionnez votre nom dans le menu de gauche pour continuer."
             ),
@@ -152,6 +154,11 @@ def main():
             "nom": "Annuler une réservation",
             "description": "Annuler une réservation existante.",
             "fonction": annulerReservation,
+        },
+        {
+            "nom": "Importer une réservation",
+            "description": "Espace gérant : Importe une réservation depuis un fichier texte.",
+            "fonction": importerReservation,
         },
         {
             "nom": "Ajouter un spectacle",
