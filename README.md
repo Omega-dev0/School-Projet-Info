@@ -33,6 +33,8 @@ python run.py
 
 **Spyder utilise une version python modifiée où le terminal intégré entre en conflit avec l'affichage de rich, il n'est donc pas possible de lancer le projet depuis Spyder.**
 
+Un environment virtuel est aussi inclus (./venv)
+
 ## Librairies utilisées
 
 - [rich](https://rich.readthedocs.io/en/stable/) pour l'affichage dans le terminal
