@@ -1,7 +1,29 @@
+# ╔═════════════════════════════════════════════════════════════════════════════════════╗
+# ║                   Importation de représentations                                    ║
+# ║                                                                                     ║
+# ║  Ce module permet au gérant d'importer des représentations depuis un fichier texte. ║
+# ║  Il lit le fichier, valide les données, puis les enregistre dans la base de données.║
+# ║                                                                                     ║
+# ║  Format du fichier (.txt):                                                          ║
+# ║  nom_spectacle <nom_du_spectacle>                                                   ║
+# ║  site_web <url_du_site>                                                             ║
+# ║  date <YYYY-MM-DD>                                                                  ║
+# ║  heure <HH:MM>                                                                      ║
+# ║  <type_place> <prix> <nb_places>                                                    ║
+# ║  [<type_place> <prix> <nb_places>]  (répéter pour chaque catégorie)                 ║
+# ║                                                                                     ║
+# ╚═════════════════════════════════════════════════════════════════════════════════════╝
+
+# ――――――――――――――――――――――――― IMPORTATION DES MODULES ――――――――――――――――――――――――――
+
+
 import Global
 import Modules.Interface as UI
 
+# ――――――――――――――――――――――――― FONCTIONS ――――――――――――――――――――――――――――――――――
 
+
+# Fonction d'affichage de l'écran de confirmation d'annulation, utilisée à plusieurs endroits
 def annulation():
     UI.attendreAppuiEntree(
         ecranAffichage="gauche",
@@ -13,6 +35,8 @@ def annulation():
 def main():
     CURSEUR = Global.CONNEXION.cursor()
 
+    # On demande au gérant de sélectionner le fichier texte à importer, avec comme chemin de base le dossier ./Files/
+    # et en filtrant les fichiers pour n'afficher que les .txt
     cheminFichier = UI.inputFichier(
         titre="Importer des Représentations",
         cheminDeBase="./Files/",
@@ -24,6 +48,8 @@ def main():
         CURSEUR.close()
         return
 
+    # L'ouverture peut échouer pour différentes raisons,
+    # mieux vaut gérer les exceptions pour éviter de planter le programme et afficher un message d'er
     try:
         """
         Format:
@@ -44,9 +70,7 @@ def main():
         """
         with open(cheminFichier, "r", encoding="utf-8") as fichier:
             texte = fichier.read()
-            texte = texte.replace(
-                "\t", " "
-            )  # Remplacer les tabulations par des espaces pour uniformiser
+            texte = texte.replace("\t", " ")  # Remplacer les tabulations par des espaces pour uniformiser
             lignes = [
                 ligne.strip() for ligne in texte.split("\n") if ligne.strip() != ""
             ]  # Nettoyer les lignes vides et les espaces superflus en fin de ligne
@@ -57,7 +81,6 @@ def main():
             date = lignes[2].split(" ", 1)[1].strip()
             heure = lignes[3].split(" ", 1)[1].strip()
             places = []
-            print(lignes[5:])
             for ligne in lignes[5:]:
                 parties = ligne.split(" ")
                 parties = [partie for partie in parties if partie != ""]
@@ -119,10 +142,12 @@ def main():
                 )
 
         Global.CONNEXION.commit()
-        infosRepresentation = f"Spectacle: [bold]{nomSpectacle}[/bold]\nDate: [bold]{date}[/bold]\nHeure: [bold]{heure}[/bold]\nPlaces:\n"
+        infosRepresentation = (
+            f"Spectacle: [bold]{nomSpectacle}[/bold]\nDate: [bold]{date}[/bold]\nHeure: [bold]{heure}[/bold]\nPlaces:\n"
+        )
         for typePlace, prix, nbPlaces in places:
             infosRepresentation += f"- Catégorie: [bold]{typePlace}[/bold], Prix: [bold]{prix}€[/bold], Nombre de places: [bold]{nbPlaces}[/bold]\n"
-            
+
         UI.attendreAppuiEntree(
             ecranAffichage="gauche",
             titre="Importation Réussie",

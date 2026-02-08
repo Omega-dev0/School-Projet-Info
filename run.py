@@ -6,12 +6,14 @@ Cependant, si ce n'est pas le cas, j'ai sauvegardé toutes les dépendances dans
 Dans ce cas il faut lancer run.py qui ajoute 'lib' au path avant d'importer main.py.
 """
 
-
 import sys
 import os
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'lib'))
+sys.path.insert(
+    0, os.path.join(os.path.dirname(__file__), "lib")
+)  # Librairies exportées dans le dossier 'lib' pour les environnements sans pip/uv
 
 from main import main
+
 if __name__ == "__main__":
     main()

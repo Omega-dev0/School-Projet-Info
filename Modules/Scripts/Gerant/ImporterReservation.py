@@ -1,27 +1,61 @@
+# ╔═════════════════════════════════════════════════════════════════════════════════════╗
+# ║                   Importation de réservations                                       ║
+# ║                                                                                     ║
+# ║  Ce module permet au gérant d'importer des réservations depuis un fichier texte.    ║
+# ║  Il lit le fichier, valide les données, puis les enregistre dans la base de données.║
+# ║                                                                                     ║
+# ║  Format du fichier (.txt):                                                          ║
+# ║  email <email_client>                                                               ║
+# ║  prenom <prenom_client>                                                             ║
+# ║  nom <nom_client>                                                                   ║
+# ║  nom_spectacle <nom_spectacle>                                                      ║
+# ║  date <YYYY-MM-DD>                                                                  ║
+# ║  heure <HH:MM>                                                                      ║
+# ║  type_place <type_place>                                                            ║
+# ║  prix <prix>                                                                        ║
+# ║  nb_places <nb_places>                                                              ║
+# ║  date_reservation <YYYY-MM-DD>                                                      ║
+# ║                                                                                     ║
+# ╚═════════════════════════════════════════════════════════════════════════════════════╝
+
+# ――――――――――――――――――――――――― IMPORTATION DES MODULES ――――――――――――――――――――――――――
+
+
 import Global
 import Modules.Interface as UI
 
+
+# ――――――――――――――――――――――――― FONCTIONS ――――――――――――――――――――――――――――――――――
+
+
+# Fonction d'affichage de l'écran de confirmation d'annulation, utilisée à plusieurs endroits
 def annulation():
     UI.attendreAppuiEntree(
         ecranAffichage="gauche",
         titre="Annulation",
         message="Importation [red]annulée[/red]. \n\nAppuyez sur Entrée pour continuer.",
     )
-    
+
+
 def main():
     CURSEUR = Global.CONNEXION.cursor()
-    
+
+    # On demande au gérant de sélectionner le fichier texte à importer, avec comme chemin de base le dossier ./Files/
+    # et en filtrant les fichiers pour n'afficher que les .txt
     cheminFichier = UI.inputFichier(
         titre="Importer des réservation",
         cheminDeBase="./Files/",
         formatsAcceptes=[".txt"],
         sortieAvecEchap=True,
     )
+    # Si le gérant appuie sur Échap au lieu de sélectionner un fichier, on annule l'importation et on retourne au menu précédent
     if cheminFichier is None:
         annulation()
         CURSEUR.close()
         return
-    
+
+    # L'ouverture peut échouer pour différentes raisons,
+    # mieux vaut gérer les exceptions pour éviter de planter le programme et afficher un message d'erreur clair au gérant
     try:
         """
         Format:
@@ -36,27 +70,27 @@ def main():
         nb_places <nb_places>
         date_reservation <YYYY-MM-DD>
         """
+
+        # Le fichier reste ouvert et sera fermé a la fin du bloc même en cas d'erreur grâce à l'utilisation de with
         with open(cheminFichier, "r", encoding="utf-8") as fichier:
             texte = fichier.read()
-            texte = texte.replace(
-                "\t", " "
-            )  # Remplacer les tabulations par des espaces pour uniformiser
+            texte = texte.replace("\t", " ")  # Remplacer les tabulations par des espaces pour uniformiser
             lignes = [
                 ligne.strip() for ligne in texte.split("\n") if ligne.strip() != ""
             ]  # Nettoyer les lignes vides et les espaces superflus en fin de ligne
             emailClient = lignes[0].split(" ", 1)[1].strip()
             prenomClient = lignes[1].split(" ", 1)[1].strip()
             nomClient = lignes[2].split(" ", 1)[1].strip()
-            
+
             nomSpectacle = lignes[3].split(" ", 1)[1].strip()
             date = lignes[4].split(" ", 1)[1].strip()
             heure = lignes[5].split(" ", 1)[1].strip()
-            
+
             typePlace = lignes[6].split(" ", 1)[1].strip()
             prix = float(lignes[7].split(" ", 1)[1].strip())
             nbPlaces = int(lignes[8].split(" ", 1)[1].strip())
             dateReservation = lignes[9].split(" ", 1)[1].strip()
-            
+
             # avant de gérer le client, vérifions que la réservation est possible
             requete = """SELECT representation.id
             FROM spectacle, representation
@@ -66,7 +100,7 @@ def main():
             AND representation.heure = ?"""
             CURSEUR.execute(requete, (nomSpectacle, date, heure))
             rep = CURSEUR.fetchone()
-            
+
             if rep is None:
                 UI.attendreAppuiEntree(
                     ecranAffichage="gauche",
@@ -75,17 +109,16 @@ def main():
                 )
                 CURSEUR.close()
                 return
-            
+
             # Verification des informations de places
             idRepresentation = rep[0]
             requete = """SELECT nb_places, prix, id
             FROM place
             WHERE id_representation = ?
             AND type_place = ?"""
-            
             CURSEUR.execute(requete, (idRepresentation, typePlace))
             placeInfo = CURSEUR.fetchone()
-            
+
             if placeInfo is None:
                 UI.attendreAppuiEntree(
                     ecranAffichage="gauche",
@@ -94,7 +127,7 @@ def main():
                 )
                 CURSEUR.close()
                 return
-            
+
             if prix != placeInfo[1]:
                 UI.attendreAppuiEntree(
                     ecranAffichage="gauche",
@@ -103,7 +136,7 @@ def main():
                 )
                 CURSEUR.close()
                 return
-            
+
             if nbPlaces > placeInfo[0]:
                 UI.attendreAppuiEntree(
                     ecranAffichage="gauche",
@@ -112,12 +145,12 @@ def main():
                 )
                 CURSEUR.close()
                 return
-            
+
             # Gestion du client
             requete = """SELECT id,nom,prenom FROM client WHERE email = ?"""
             CURSEUR.execute(requete, (emailClient,))
             clientChoisi = CURSEUR.fetchone()
-            
+
             if clientChoisi is None:
                 annule = UI.attendreAppuiEntree(
                     ecranAffichage="gauche",
@@ -128,7 +161,7 @@ def main():
                     annulation()
                     CURSEUR.close()
                     return
-                
+
                 if nomClient == "" or prenomClient == "" or emailClient == "":
                     UI.attendreAppuiEntree(
                         ecranAffichage="gauche",
@@ -137,7 +170,7 @@ def main():
                     )
                     CURSEUR.close()
                     return
-                
+
                 # Insertion du nouveau client dans la base de données
                 requeteInsertion = "INSERT INTO client (nom, prenom, email) VALUES (?,?,?)"
                 CURSEUR.execute(requeteInsertion, (nomClient, prenomClient, emailClient))
@@ -153,26 +186,27 @@ def main():
                     )
                     CURSEUR.close()
                     return
-                
+
             # Insertion de la réservation
-            requeteInsertion = """INSERT INTO reservation (id_client, id_place, nb_places, date_reservation) VALUES (?, ?, ?, ?)"""
+            requeteInsertion = (
+                """INSERT INTO reservation (id_client, id_place, nb_places, date_reservation) VALUES (?, ?, ?, ?)"""
+            )
             CURSEUR.execute(
                 requeteInsertion,
                 (idClient, placeInfo[2], nbPlaces, dateReservation),
             )
-            
+
             # Mise à jour du nombre de places disponibles
             requeteMiseAJour = """UPDATE place SET nb_places = nb_places - ? WHERE id = ?"""
             CURSEUR.execute(requeteMiseAJour, (nbPlaces, placeInfo[2]))
             Global.CONNEXION.commit()
-            
-            
+
             UI.attendreAppuiEntree(
                 ecranAffichage="gauche",
                 titre="Importation Réussie",
                 message=f"[green]La réservation a été importée avec succès.[/green]\n\nClient: [bold]{prenomClient} {nomClient}[/bold]\nSpectacle: [bold]{nomSpectacle}[/bold]\nDate: [bold]{date}[/bold]\nHeure: [bold]{heure}[/bold]\nType de Place: [bold]{typePlace}[/bold]\nNombre de Places: [bold]{nbPlaces}[/bold]\nDate de Réservation: [bold]{dateReservation}[/bold]\n\nAppuyez sur Entrée pour continuer.",
             )
-        
+
     except Exception as e:
         UI.attendreAppuiEntree(
             ecranAffichage="gauche",

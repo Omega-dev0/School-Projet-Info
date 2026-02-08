@@ -10,7 +10,6 @@ from rich.layout import Layout
 from rich.console import Console
 import time
 from typing import Union
-import os
 import pathlib
 
 import Global
@@ -164,15 +163,11 @@ def afficherMenu(
         debutIndex = page * itemsParPage
 
         if len(options) > itemsParPage:
-            elementOptions.append(
-                f"[dim]Page {page + 1} / {(len(options) - 1) // itemsParPage + 1}[/dim]"
-            )
+            elementOptions.append(f"[dim]Page {page + 1} / {(len(options) - 1) // itemsParPage + 1}[/dim]")
         if debutIndex > 0:
             elementOptions.append("[dim]...[/dim]")
 
-        for index, option in enumerate(
-            options[debutIndex : debutIndex + itemsParPage], start=debutIndex
-        ):
+        for index, option in enumerate(options[debutIndex : debutIndex + itemsParPage], start=debutIndex):
             if separateurs.get(index):
                 elementOptions.append(separateurs[index])
             if index == indexCurseur:
@@ -204,11 +199,7 @@ def afficherMenu(
             indexCurseur = (indexCurseur - 1) % len(options) if boucle else max(0, indexCurseur - 1)
             miseAJourInterface()
         elif touche == keyboard.Key.down:
-            indexCurseur = (
-                (indexCurseur + 1) % len(options)
-                if boucle
-                else min(len(options) - 1, indexCurseur + 1)
-            )
+            indexCurseur = (indexCurseur + 1) % len(options) if boucle else min(len(options) - 1, indexCurseur + 1)
             miseAJourInterface()
         elif touche == keyboard.Key.enter:
             optionSelectionnee, selectionFaite = options[indexCurseur], True
@@ -258,11 +249,7 @@ def attendreAppuiEntree(
     connexionClavier.start()
 
     contenu = Group(Markdown(f"# {elementTexteVersString(titre)}"), "", message)
-    (
-        mettreAJourPanelGauche(contenu)
-        if ecranAffichage == "gauche"
-        else mettreAJourPanelDroit(contenu)
-    )
+    (mettreAJourPanelGauche(contenu) if ecranAffichage == "gauche" else mettreAJourPanelDroit(contenu))
 
     while annulee is None:
         time.sleep(0.1)
@@ -312,21 +299,13 @@ def inputTexte(
 
     def miseAJourInterface():
         nonlocal reponses, positionDuCurseur, erreurPrecedente
-        reponseStr = (
-            reponses[indexReponseSelectionnee]
-            if reponses[indexReponseSelectionnee] is not None
-            else ""
-        )
-        reponseAffichee = reponseStr[:positionDuCurseur] + "|" + reponseStr[positionDuCurseur:]
+        reponseStr = reponses[indexReponseSelectionnee] if reponses[indexReponseSelectionnee] is not None else ""
+        reponseAffichee = reponseStr[:positionDuCurseur] + "|" + reponseStr[positionDuCurseur:]  # type: ignore
         messageModifie = message
 
         for i in range(len(reponses)):
-            r = (
-                reponseAffichee
-                if i == indexReponseSelectionnee
-                else (reponses[i] if reponses[i] is not None else "")
-            )
-            messageModifie = messageModifie.replace("__INPUT__", r, 1)
+            r = reponseAffichee if i == indexReponseSelectionnee else (reponses[i] if reponses[i] is not None else "")
+            messageModifie = messageModifie.replace("__INPUT__", r, 1)  # type: ignore
 
         contenu = Group(
             Markdown(f"# {elementTexteVersString(titre)}"),
@@ -334,11 +313,7 @@ def inputTexte(
             messageModifie,
             f"[red]{erreurPrecedente}[/red]" if erreurPrecedente else "",
         )
-        (
-            mettreAJourPanelGauche(contenu)
-            if ecranAffichage == "gauche"
-            else mettreAJourPanelDroit(contenu)
-        )
+        (mettreAJourPanelGauche(contenu) if ecranAffichage == "gauche" else mettreAJourPanelDroit(contenu))
 
     majEnfoncee, altEnfoncee = False, False
 

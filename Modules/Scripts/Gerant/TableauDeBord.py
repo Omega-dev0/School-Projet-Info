@@ -1,3 +1,14 @@
+# ╔═════════════════════════════════════════════════════════════════════════════════════╗
+# ║                      Tableau de Bord du Gérant                                      ║
+# ║                                                                                     ║
+# ║  Ce module affiche le tableau de bord du gérant avec :                             ║
+# ║  - Les ventes par spectacle (nombre de places et chiffre d'affaires)               ║
+# ║  - Les prochaines représentations à venir                                          ║
+# ║                                                                                     ║
+# ╚═════════════════════════════════════════════════════════════════════════════════════╝
+
+# ――――――――――――――――――――――――― IMPORTATION DES MODULES ――――――――――――――――――――――――――
+
 import Global
 import Modules.Interface as UI
 import datetime
@@ -5,6 +16,8 @@ import datetime
 from rich.table import Table
 from rich.console import Group
 from rich.markdown import Markdown
+
+# ――――――――――――――――――――――――― FONCTIONS ――――――――――――――――――――――――――――――――
 
 
 def main():
@@ -20,6 +33,9 @@ def main():
         ORDER BY SUM(place.prix * reservation.nb_places) DESC
     """
     ventesParSpectacle = CURSEUR.execute(requeteVentes).fetchall()
+
+    # On affiche à droite les ventes par spectacle, avec pour chacun d'eux le nombre de places vendues et le chiffre d'affaires généré,
+    # dans un tableau trié par chiffre d'affaires décroissant
     contenu = ""
     if len(ventesParSpectacle) == 0:
         contenu += "\nAucune vente enregistrée.\n"
@@ -49,6 +65,8 @@ def main():
         )
         UI.mettreAJourPanelDroit(group)
 
+    # A gauche, on affiche les 5 prochaines représentations à venir, avec pour chacune d'elle le nom du spectacle, la date et l'heure de la représentation,
+    # et le temps restant avant le début de la représentation, triées par date croissante
     prochainesRepresentation = CURSEUR.execute(
         """SELECT representation.id, representation.date, representation.heure, spectacle.libelle
         FROM representation,spectacle 
@@ -65,10 +83,11 @@ def main():
         contenu += "[bold underline]Prochaines Représentations:[/bold underline]\n"
         for representation in prochainesRepresentation:
             dateNow = datetime.datetime.now()
-            dateRep = datetime.datetime.strptime(
-                f"{representation[1]} {representation[2]}", "%Y-%m-%d %H:%M"
-            )
+            dateRep = datetime.datetime.strptime(f"{representation[1]} {representation[2]}", "%Y-%m-%d %H:%M")
             delta = dateRep - dateNow
+
+            # A partir du delta des deux dates, on construit une chaîne de caractères indiquant
+            # le temps restant avant le début de la représentation, en affichant les jours, heures et minutes restants
             tempsRestant = ""
             if delta.days > 0:
                 tempsRestant += f"{delta.days} jour{'s' if delta.days > 1 else ''} "
@@ -80,6 +99,7 @@ def main():
                 if len(tempsRestant) > 0:
                     tempsRestant += "et "
                 tempsRestant += f"{minutes} minute{'s' if minutes > 1 else ''} "
+
             contenu += f"\n\n- [bold]{representation[3]}[/bold] le [green]{UI.formatDateSQLToFR(representation[1])}[/green] à [green]{representation[2]}[/green] | Dans: {tempsRestant}"
 
     UI.attendreAppuiEntree(
