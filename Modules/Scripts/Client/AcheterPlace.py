@@ -39,7 +39,7 @@ def main():
     FROM spectacle,representation 
     WHERE spectacle.id = representation.id_spectacle
     AND representation.date >= DATE('now')
-    GROUP BY spectacle.id, spectacle.libelle, spectacle.site_web
+    GROUP BY spectacle.id
     ORDER BY spectacle.libelle"""
     CURSEUR.execute(requete)
     spectacles = CURSEUR.fetchall()

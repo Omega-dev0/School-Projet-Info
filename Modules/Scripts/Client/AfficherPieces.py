@@ -22,7 +22,7 @@ def main():
     requete = """SELECT spectacle.id, spectacle.libelle, spectacle.site_web, COUNT(representation.id)
     FROM spectacle 
     JOIN representation ON spectacle.id = representation.id_spectacle 
-    GROUP BY spectacle.id, spectacle.libelle, spectacle.site_web 
+    GROUP BY spectacle.id 
     ORDER BY spectacle.libelle;"""
     CURSEUR.execute(requete)
     spectacles = CURSEUR.fetchall()

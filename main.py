@@ -3,6 +3,7 @@
 # ――――――――――――――――――――――――― IMPORTATION DES MODULES ――――――――――――――――――――――――――
 
 # Modules personnels
+import os
 import Modules.Interface as UI
 import Global
 
@@ -39,7 +40,22 @@ import re
 # ――――――――――――――――――――――――― FONCTIONS ――――――――――――――――――――――――――
 
 
+def preCheck():
+    session_type = os.environ.get("XDG_SESSION_TYPE", "").lower()
+    if session_type == "wayland":
+        UI.attendreAppuiEntree(
+            titre="Incompatibilité Wayland",
+            message="[red]Le projet ne peut pas fonctionner sur une machine utilisant Wayland au lieu de X11, car la librairie utilisée pour gérer les inputs clavier (pynput) ne supporte pas encore Wayland.[/red]\n\nVeuillez utiliser X11 pour que le projet fonctionne correctement.",
+            ecranAffichage="gauche",
+        )
+        return False
+    return True
+
+
 def main():
+
+    if not preCheck():
+        return
 
     CURSEUR = Global.CONNEXION.cursor()
 

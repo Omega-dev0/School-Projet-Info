@@ -402,7 +402,7 @@ def inputTexte(
         on_press=toucheDeclenchee, on_release=toucheRelachee, suppress=Global.BLOQUER_INPUTS
     )
     connexionClavier.start()
-
+    # f(a,b) = f(*[a,b])
     while True:
         if termine:
             if annulee == True:

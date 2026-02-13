@@ -72,6 +72,8 @@ def main():
     [bold]Heure (HH:MM):[/bold] __INPUT__"""
 
     def validerRepresentation(date, heure):
+        r"\\"
+
         # On utilise regex pour valider les formats de la date et de l'heure,
         # avant de tenter de les convertir en objets datetime pour vérifier qu'ils correspondent à des dates et heures valides
         regexDate = r"^\d{2}/\d{2}/\d{4}$"

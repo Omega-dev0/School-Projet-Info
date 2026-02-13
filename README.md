@@ -44,3 +44,5 @@ Un environment virtuel est aussi inclus (./venv)
 
 Par défaut, le projet bloque tout autre input clavier, même lorsque la fenetre n'est pas active afin d'éviter que l'utilisateur tape dans le terminal par erreur.
 Pour changer ce comportement il suffit de modifier la variable `BLOQUER_INPUTS` dans `Global.py` et de relancer le projet.
+
+Une limitation, majeur et que le projet ne peut pas gérer une machine linux avec wayland au lieu de x11 car la librairie pynput ne supporte pas encore wayland, il est donc nécessaire d'utiliser x11 pour que le projet fonctionne correctement.
